@@ -8,7 +8,7 @@ interface Props {
 
 const ProfileSidebar: React.FC<Props> = ({ githubUser }: Props) => {
   return (
-    <Box>
+    <Box as="aside">
       <img
         src={`https://github.com/${githubUser}.png`}
         title={githubUser}

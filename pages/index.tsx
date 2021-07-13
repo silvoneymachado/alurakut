@@ -1,4 +1,4 @@
-import React, { BaseSyntheticEvent } from "react";
+import React, { BaseSyntheticEvent, useRef, useState } from "react";
 import Box from "../src/components/Box";
 import MainGrid from "../src/components/MainGrid";
 import ProfileRelationsWrapper from "../src/components/ProfileRelations";
@@ -10,6 +10,10 @@ import {
 
 const Home: React.FC = () => {
   const githubUser = "silvoneymachado";
+  const [communities, setCommunities] = useState<
+    { title: string; imgUrl: string; url: string }[]
+  >([]);
+  const formRef = useRef(null);
   const favoritesPeople = [
     "filipedeschamps",
     "diego3g",
@@ -22,9 +26,42 @@ const Home: React.FC = () => {
     "felipefialho",
   ];
 
+  const resetFields = (formData: FormData) => {
+    formData.set("title", "");
+    formData.set("cover", "");
+    formData.set("url", "");
+  };
+
   const handleCreateCommunity = (e: BaseSyntheticEvent) => {
     e.preventDefault();
-  }
+    const formData = new FormData(e.target);
+
+    const title = formData.get("title")?.toString();
+    const cover = formData.get("cover")?.toString();
+    const url = formData.get("url")?.toString();
+
+    if (title === "" || !title) {
+      alert("Você precisa informar um nome para a comunidade!");
+      return;
+    }
+
+    if (url === "" || !url) {
+      alert("Você precisa informar uma url para sua comunidade!");
+      return;
+    }
+
+    const newCommunity = {
+      title: title,
+      imgUrl:
+        cover !== "" && cover
+          ? cover
+          : `https://picsum.photos/300/300.jpg?hmac=${Math.random() * 10000}`,
+      url: url,
+    };
+
+    setCommunities([...communities, newCommunity]);
+    
+  };
 
   return (
     <>
@@ -39,10 +76,10 @@ const Home: React.FC = () => {
 
             <OrkutNostalgicIconSet />
           </Box>
-
+          {/* Form */}
           <Box>
             <h2 className="subTitle">O que você deseja fazer?</h2>
-            <form onSubmit={handleCreateCommunity}>
+            <form ref={formRef} onSubmit={handleCreateCommunity}>
               <div>
                 <input
                   placeholder="Qual será o nome da sua comunidade?"
@@ -54,14 +91,20 @@ const Home: React.FC = () => {
               <div>
                 <input
                   placeholder="Coloque uma url para usarmos de capa"
-                  name="capa"
+                  name="cover"
                   aria-label="Coloque uma url para usarmos de capa"
                   type="text"
                 />
               </div>
-              <button>
-                Criar comunidade
-              </button>
+              <div>
+                <input
+                  placeholder="Coloque uma url para sua comunidade"
+                  name="url"
+                  aria-label="Coloque uma url para sua comunidade"
+                  type="text"
+                />
+              </div>
+              <button>Criar comunidade</button>
             </form>
           </Box>
         </div>
@@ -84,7 +127,19 @@ const Home: React.FC = () => {
               ))}
             </ul>
           </ProfileRelationsWrapper>
-          <Box>Comunidades</Box>
+          <ProfileRelationsWrapper>
+            <h2 className="smallTitle">Comunidades ({communities.length})</h2>
+            <ul>
+              {communities.map((community, index) => (
+                <li key={`${community.title}-${index}`}>
+                  <a href={community.url} key={community.title}>
+                    <img src={community.imgUrl} />
+                    <span>{community.title}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </ProfileRelationsWrapper>
         </div>
       </MainGrid>
     </>
