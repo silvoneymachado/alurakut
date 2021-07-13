@@ -1,5 +1,4 @@
 # Alurakut
-
 ## Imersão React da Alura
 
 Código utilizado a partir da semana de imersão React da alura, recriando a interface do Orkut.
