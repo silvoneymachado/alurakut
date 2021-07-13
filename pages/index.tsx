@@ -8,15 +8,15 @@ import { AlurakutMenu, OrkutNostalgicIconSet } from "../src/lib/AlurakutCommons"
 const Home: React.FC = () => {
   const githubUser = "silvoneymachado";
   const favoritesPeople = [
+    'filipedeschamps',
+    'diego3g',
+    'wenderpmachado',
     'juunegreiros',
     'omariosouto',
     'peas',
     'rafaballerini',
     'marcobrunodev',
     'felipefialho',
-    'filipedeschamps',
-    'diego3g',
-    'wenderpmachado',
   ]
 
   return (
