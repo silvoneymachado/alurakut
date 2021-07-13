@@ -14,6 +14,9 @@ const Home: React.FC = () => {
     'rafaballerini',
     'marcobrunodev',
     'felipefialho',
+    'filipedeschamps',
+    'diego3g',
+    'wenderpmachado',
   ]
 
   return (
