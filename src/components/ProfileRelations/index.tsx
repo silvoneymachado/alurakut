@@ -4,7 +4,7 @@ interface Props {
   children?: ReactNode;
   title?: string;
   listItems?: any[];
-  RenderItem?: ReactNode;
+  RenderItem?: React.ElementType;
 }
 
 const ProfileRelationsBoxWrapper: React.FC<Props> = ({
