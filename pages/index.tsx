@@ -1,7 +1,10 @@
-import React, { BaseSyntheticEvent, useRef, useState } from "react";
+import React, { BaseSyntheticEvent, useEffect, useRef, useState } from "react";
 import Box from "../src/components/Box";
+import CommunityListItem from "../src/components/CommunityListItem";
+import FavoritesPeopleListItem from "../src/components/FavoritesPeopleListItem";
+import FollowerListItem from "../src/components/FollowerListItem";
 import MainGrid from "../src/components/MainGrid";
-import ProfileRelationsWrapper from "../src/components/ProfileRelations";
+import ProfileRelationsBoxWrapper from "../src/components/ProfileRelations";
 import ProfileSidebar from "../src/components/ProfileSidebar";
 import {
   AlurakutMenu,
@@ -9,11 +12,13 @@ import {
 } from "../src/lib/AlurakutCommons";
 
 const Home: React.FC = () => {
-  const githubUser = "silvoneymachado";
+  const [githubUser, setGithubUser] = useState('');
   const [communities, setCommunities] = useState<
     { title: string; imgUrl: string; url: string }[]
   >([]);
-  const formRef = useRef(null);
+
+  const [followers, setFollowers] = useState([]);
+
   const favoritesPeople = [
     "filipedeschamps",
     "diego3g",
@@ -31,6 +36,27 @@ const Home: React.FC = () => {
     formData.set("cover", "");
     formData.set("url", "");
   };
+
+  const getFollowers = (userName: string) => {
+    fetch(`https://api.github.com/users/${userName}/followers`)
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+
+        throw new Error(`We had an error: ${res.status}-${res.statusText}`);
+      })
+      .then((data: any[]) => {
+        setFollowers(data);
+      })
+      .catch((err) => alert(err));
+  };
+
+  useEffect(() => {
+    const userName = prompt(`Digite o seu usuário do github`);
+    setGithubUser(userName);
+    getFollowers(userName);
+  }, []);
 
   const handleCreateCommunity = (e: BaseSyntheticEvent) => {
     e.preventDefault();
@@ -60,7 +86,6 @@ const Home: React.FC = () => {
     };
 
     setCommunities([...communities, newCommunity]);
-    
   };
 
   return (
@@ -79,7 +104,7 @@ const Home: React.FC = () => {
           {/* Form */}
           <Box>
             <h2 className="subTitle">O que você deseja fazer?</h2>
-            <form ref={formRef} onSubmit={handleCreateCommunity}>
+            <form onSubmit={handleCreateCommunity}>
               <div>
                 <input
                   placeholder="Qual será o nome da sua comunidade?"
@@ -112,34 +137,21 @@ const Home: React.FC = () => {
           className="profileRelationsArea"
           style={{ gridArea: "profileRelationsArea" }}
         >
-          <ProfileRelationsWrapper>
-            <h2 className="smallTitle">
-              Pessoas da comunidade ({favoritesPeople.length})
-            </h2>
-            <ul>
-              {favoritesPeople.map((person) => (
-                <li key={person}>
-                  <a href={`/users/${person}`} key={person}>
-                    <img src={`https://github.com/${person}.png`} />
-                    <span>{person}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </ProfileRelationsWrapper>
-          <ProfileRelationsWrapper>
-            <h2 className="smallTitle">Comunidades ({communities.length})</h2>
-            <ul>
-              {communities.map((community, index) => (
-                <li key={`${community.title}-${index}`}>
-                  <a href={community.url} key={community.title}>
-                    <img src={community.imgUrl} />
-                    <span>{community.title}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </ProfileRelationsWrapper>
+          <ProfileRelationsBoxWrapper
+            title="Comunidades"
+            listItems={communities}
+            RenderItem={CommunityListItem}
+          />
+          <ProfileRelationsBoxWrapper
+            title="Pessoas da comunidade"
+            listItems={favoritesPeople}
+            RenderItem={FavoritesPeopleListItem}
+          />
+          <ProfileRelationsBoxWrapper
+            title="Seguidores"
+            listItems={followers}
+            RenderItem={FollowerListItem}
+          />
         </div>
       </MainGrid>
     </>
