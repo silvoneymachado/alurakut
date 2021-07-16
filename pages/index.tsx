@@ -12,9 +12,14 @@ import {
 } from "../src/lib/AlurakutCommons";
 
 const Home: React.FC = () => {
-  const [githubUser, setGithubUser] = useState('');
+  const [githubUser, setGithubUser] = useState("");
   const [communities, setCommunities] = useState<
-    { title: string; imgUrl: string; url: string }[]
+    {
+      title: string;
+      imageurl: string;
+      communityurl: string;
+      creatorslug: string;
+    }[]
   >([]);
 
   const [followers, setFollowers] = useState([]);
@@ -52,11 +57,59 @@ const Home: React.FC = () => {
       .catch((err) => alert(err));
   };
 
+  const getCummunities = (userName: string) => {
+    fetch("https://graphql.datocms.com/", {
+      method: "POST",
+      headers: {
+        Authorization: "d68aa4c00f690490fd5b57ec47ecec",
+        "Content-type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        query: `query {
+          allCommunities(filter: { creatorslug: { eq: "${userName}"} }) {
+            id
+            title
+            imageurl
+            communityurl
+            creatorslug
+          }
+        }`,
+      }),
+    })
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+
+        throw new Error(`We had an error: ${res.status}-${res.statusText}`);
+      })
+      .then((jsonData: any) => {
+        if(jsonData.data && jsonData.data.allCommunities.length > 0) {
+          setCommunities(jsonData.data.allCommunities);
+        } else {
+          setCommunities([]);
+        }
+      })
+      .catch((err) => alert(err));
+  };
+
+  const handleChangeUser = (userName: string) => {
+    localStorage.setItem("userName", userName);
+    setGithubUser(userName);
+    getCummunities(userName);
+  };
+
   useEffect(() => {
-    const userName = prompt(`Digite o seu usuário do github`);
+    let userName = localStorage.getItem("userName");
+    if (!userName) {
+      userName = prompt(`Digite o seu usuário do github`);
+      localStorage.setItem("userName", userName);
+    }
     setGithubUser(userName);
     getFollowers(userName);
-  }, []);
+    getCummunities(userName);
+  }, [githubUser]);
 
   const handleCreateCommunity = (e: BaseSyntheticEvent) => {
     e.preventDefault();
@@ -78,14 +131,34 @@ const Home: React.FC = () => {
 
     const newCommunity = {
       title: title,
-      imgUrl:
+      imageurl:
         cover !== "" && cover
           ? cover
           : `https://picsum.photos/300/300.jpg?hmac=${Math.random() * 10000}`,
-      url: url,
+      communityurl: url,
+      creatorslug: githubUser,
     };
 
-    setCommunities([...communities, newCommunity]);
+    fetch("/api/communities", {
+      method: "POST",
+      body: JSON.stringify(newCommunity),
+      headers: {
+        "Content-type": "application/json",
+      },
+    })
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          if(data){
+            getCummunities(githubUser);
+          }
+          return;
+        }
+        throw new Error(`We had an error: ${res.status}-${res.statusText}`);
+      })
+      .catch((err) => alert(err));
+
+    // setCommunities([...communities, newCommunity]);
   };
 
   return (
@@ -93,7 +166,10 @@ const Home: React.FC = () => {
       <AlurakutMenu githubUser={githubUser} />
       <MainGrid>
         <div className="profileArea" style={{ gridArea: "profileArea" }}>
-          <ProfileSidebar githubUser={githubUser} />
+          <ProfileSidebar
+            githubUser={githubUser}
+            changeUsername={handleChangeUser}
+          />
         </div>
         <div className="welcomeArea" style={{ gridArea: "welcomeArea" }}>
           <Box>

@@ -5,7 +5,7 @@ interface Props {
 
 const FavoritesPeopleListItem: React.FC<Props> = ({item, index}: Props) => {
     return (
-        <li key={`${item.id}-${index}`}>
+        <li key={`${item}-${index}`}>
             <a href={`/users/${item}`}>
                 <img src={`https://github.com/${item}.png`} />
                 <span>{item}</span>
